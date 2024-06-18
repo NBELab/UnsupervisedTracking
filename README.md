@@ -80,8 +80,15 @@ optional arguments:
 
 The files are configured to run the tracking of the new dataset.
 
-## Dataset
+## Datasets
 Our dataset link:([link](https://drive.google.com/file/d/1J4nt8YPFGKSW-L5MMPa-tCjsgcd9aeLF/view))
+
+OTB2015 dataset: in order to use this, you will need to follow these instructions:
+1. Download the OTB2015 dataset ([link](http://cvlab.hanyang.ac.kr/tracker_benchmark/datasets.html/)).
+2. Download ROS and follow the following guide of ESIM usage: ([link](https://github.com/uzh-rpg/rpg_esim/wiki/Simulating-events-from-a-video)).
+3. Convert the dataset to events using the ESIM.
+
+Training dataset: can be found here ([link](https://github.com/TimoStoff/esim_config_generator)).
 
 ## Citation
 
