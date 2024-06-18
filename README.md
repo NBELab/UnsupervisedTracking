@@ -1,6 +1,13 @@
 # ED-DCFNet: An Unsupervised Encoder-decoder Neural Model for Event-driven Feature Extraction and Object Tracking
 
-## Paper Details
+<p align="center">
+  <img src="./figures/ED-DCFNet_architecture.png" width="600">
+</p>
+
+<p align="center">
+  <img src="./figures/framework_design.png" width="600">
+</p>
+
 
 **Title:** ED-DCFNet: An Unsupervised Encoder-decoder Neural Model for Event-driven Feature Extraction and Object Tracking
 
@@ -11,9 +18,70 @@
 **Publication:** Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops, 2024, pp. 2191-2199
 ([link](https://openaccess.thecvf.com/content/CVPR2024W/EVW/html/Ramon_ED-DCFNet_An_Unsupervised_Encoder-decoder_Neural_Model_for_Event-driven_Feature_Extraction_CVPRW_2024_paper.html))
 
-**Dataset:**
-Our dataset link:([link](https://drive.google.com/file/d/1J4nt8YPFGKSW-L5MMPa-tCjsgcd9aeLF/view))
+## Table of Contents
 
+1. [Requirements](#requirements)
+2. [Usage](#usage)
+3. [Dataset](#dataset)
+4. [Citation](#citation)
+5. [License](#license)
+
+### Requirements
+- Python 3.8
+- pytorch > 1.0
+- kornia
+- dv
+- tqdm
+
+## Usage
+
+1. Download the dataset from [Dataset](#dataset), and follow the readme in the data folder.
+
+2. Navigate to the 'track' directory in the repository:
+
+```bash
+cd ./track
+```
+
+3. Run the 'track_dvs_dataset.py':
+
+```bash
+python track_dvs_dataset.py -- name XXXX
+```
+
+The testing accepts several command line arguments:
+```
+usage: track_dvs_dataset.py [-h] --name NAME [--weights WEIGHTS] [--data-path DATA_PATH] [--annotation-path ANNOTATION_PATH] [--data-info-path DATA_INFO_PATH] [--num-bins NUM_BINS]
+                            [--track-events] [--no-track-events] [--track-frames] [--no-track-frames] [--track-combined] [--no-track-combined] [--eval-only] [-p P]
+
+Run tracker on new dataset
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --name NAME           Test name
+  --weights WEIGHTS     Path to model weights (default: ./models/model.pth.tar)
+  --data-path DATA_PATH
+                        Path to test data (default: ./data/)
+  --annotation-path ANNOTATION_PATH
+                        Path to annotation data (default: ./data/annotations/)
+  --data-info-path DATA_INFO_PATH
+                        Path to data information (default: ./data)
+  --num-bins NUM_BINS, -b NUM_BINS
+                        Number of temporal bins, must be the same as the network (default: 5)
+  --track-events, -e    Track on events (default: True)
+  --no-track-events
+  --track-frames, -f    Track on frames (default: True)
+  --no-track-frames
+  --track-combined, -c  Track on events and frames combined (default: True)
+  --no-track-combined
+  --eval-only           Evaluate on previous results (default: False)
+  -p P                  p (as in the paper), for reduction of frame net output (default:None)
+```
+
+The files are configured to run the tracking of the new dataset.
+
+## Dataset
+Our dataset link:([link](https://drive.google.com/file/d/1J4nt8YPFGKSW-L5MMPa-tCjsgcd9aeLF/view))
 
 ## Citation
 

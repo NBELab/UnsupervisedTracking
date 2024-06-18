@@ -387,11 +387,14 @@ def parse_args():
     argparser.add_argument("--data-path", default="./data/", help="Path to test data (default: ./data/)")
     argparser.add_argument("--annotation-path", default="./data/annotations/", help="Path to annotation data (default: ./data/annotations/)")
     argparser.add_argument("--data-info-path", default="./data/", help="Path to data information (default: ./data)")
-    argparser.add_argument("--num-bins","-b", default=5, type=int, help="Number of temporal bins (default: 5)")
-    argparser.add_argument("--track-events","-e", default=True, type=bool, help="Track on events (default: True)")
-    argparser.add_argument("--track-frames","-f", default=True, type=bool, help="Track on frames (default: True)")
-    argparser.add_argument("--track-combined","-c", default=True, type=bool, help="Track on events and frames combined (default: True)")
-    argparser.add_argument("--eval-only", default=False, type=bool, help="Evaluate on previous results (default: False)")
+    argparser.add_argument("--num-bins","-b", default=5, type=int, help="Number of temporal bins, must be the same as the network (default: 5)")
+    argparser.add_argument("--track-events","-e",default=True, action='store_true', help="Track on events (default: True)")
+    argparser.add_argument("--no-track-events",dest='track_events', action='store_false')
+    argparser.add_argument("--track-frames","-f",default=True, action='store_true', help="Track on frames (default: True)")
+    argparser.add_argument("--no-track-frames",dest='track_frames', action='store_false')
+    argparser.add_argument("--track-combined","-c",default=True, action='store_true', help="Track on events and frames combined (default: True)")
+    argparser.add_argument("--no-track-combined",dest='track_combined', action='store_false')
+    argparser.add_argument("--eval-only",default=False, action='store_true', help="Evaluate on previous results (default: False)")
     argparser.add_argument("-p",default=None,help="p (as in the paper), for reduction of frame net output (default:None)")
 
     return argparser.parse_args()
@@ -416,7 +419,7 @@ def main(args):
                 test_frames(net,files,data,gt_bb,args.name)
             eval_auc(files,data,gt_bb,args.name,ev=1)
     if(args.track_combined):
-        net = DCFNet_add(args.num_bins, config, args.p)
+        net = DCFNet_add(args.num_bins, config, float(args.p))
         net.load_param(args.weights)
         net.eval().cuda()
         net.config.scale_step = 1.010
