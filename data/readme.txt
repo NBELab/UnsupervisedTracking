@@ -1,0 +1,1 @@
+Extract the zip file in here, move the annotations (the .txt files) into a new annotations folder.
