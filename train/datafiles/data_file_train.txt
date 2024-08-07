@@ -1,0 +1,1 @@
+full/path/to/training/file/000000000_out.h5

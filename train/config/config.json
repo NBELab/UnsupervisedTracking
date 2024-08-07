@@ -1,0 +1,58 @@
+{
+    "name": "ED-DCFNet",
+    "n_gpu": 1,
+	"data_loader": {
+        "type": "HDF5DataLoader",
+        "args": {
+            "data_file": "....full/path/to/working/dir..../UnsupervisedTracking/train/datafiles/data_file_train.txt",
+            "batch_size": 32,
+            "shuffle": true,
+            "num_workers": 0,
+            "pin_memory": true,
+            "sequence_kwargs": {
+                "sequence_length": 3,
+                "dataset_type": "DynamicH5Dataset",
+                "proba_pause_when_running": 0.0,
+                "proba_pause_when_paused": 0.0,
+                "proba_neg_events": 0.3,
+                "proba_rev_events": 0.3,
+                "proba_fast_back": 0.1,
+                "normalize_image": false,
+                "dataset_kwargs": {
+                    "num_bins": 5
+                }
+            }
+        }
+    },
+    "valid_data_loader": {
+        "type": "HDF5DataLoader",
+        "args": {
+            "data_file": "....full/path/to/working/dir..../UnsupervisedTracking/train/datafiles/data_file_valid.txt",
+            "batch_size": 32,
+            "shuffle": false,
+            "num_workers": 0,
+            "pin_memory": true,
+            "sequence_kwargs": {
+                "sequence_length": 3,
+                "dataset_type": "DynamicH5Dataset",
+                "normalize_image": false,
+                "dataset_kwargs": {
+                    "num_bins": 5
+                }
+            }
+        }
+    },
+    "trainer": {
+        "input_sz": 128,
+        "padding" : 2,
+        "range" : 10,
+        "start_epoch": 0,
+        "epochs": 50,
+        "workers": 0,
+        "print_freq": 10,
+        "lr": 0.01,
+        "momentum": 0.9,
+        "weight_decay": 1e-6,
+        "save_dir": "./train/work"
+    }
+}
