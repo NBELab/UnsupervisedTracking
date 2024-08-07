@@ -23,10 +23,11 @@ from typing import Union
     on Torch Tensor variables, and that allow to transform an optic flow field as well.
 """
 
-def normalize_image_sequence_(sequence, key='frame'):
+
+def normalize_image_sequence_(sequence, key="frame"):
     images = torch.stack([item[key] for item in sequence], dim=0)
     mini = np.percentile(torch.flatten(images), 1)
-    maxi= np.percentile(torch.flatten(images), 99)
+    maxi = np.percentile(torch.flatten(images), 99)
     images = (images - mini) / (maxi - mini + 1e-5)
     images = torch.clamp(images, 0, 1)
     for i, item in enumerate(sequence):
@@ -41,9 +42,11 @@ def put_hot_pixels_in_voxel_(voxel, hot_pixel_range=1.0, hot_pixel_fraction=0.00
         voxel[..., :, y[i], x[i]] = random.uniform(-hot_pixel_range, hot_pixel_range)
 
 
-def add_hot_pixels_to_sequence_(sequence, hot_pixel_std=1.0, max_hot_pixel_fraction=0.001):
+def add_hot_pixels_to_sequence_(
+    sequence, hot_pixel_std=1.0, max_hot_pixel_fraction=0.001
+):
     hot_pixel_fraction = random.uniform(0, max_hot_pixel_fraction)
-    voxel = sequence[0]['events']
+    voxel = sequence[0]["events"]
     num_hot_pixels = int(hot_pixel_fraction * voxel.shape[-1] * voxel.shape[-2])
     x = torch.randint(0, voxel.shape[-1], (num_hot_pixels,))
     y = torch.randint(0, voxel.shape[-2], (num_hot_pixels,))
@@ -52,7 +55,7 @@ def add_hot_pixels_to_sequence_(sequence, hot_pixel_std=1.0, max_hot_pixel_fract
     # TODO multiprocessing
     for item in sequence:
         for i in range(num_hot_pixels):
-            item['events'][..., :, y[i], x[i]] += val[i]
+            item["events"][..., :, y[i], x[i]] += val[i]
 
 
 def add_noise_to_voxel(voxel, noise_std=1.0, noise_fraction=0.1):
@@ -83,17 +86,16 @@ class Compose(object):
         return x
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
+        format_string = self.__class__.__name__ + "("
         for t in self.transforms:
-            format_string += '\n'
-            format_string += '    {0}'.format(t)
-        format_string += '\n)'
+            format_string += "\n"
+            format_string += "    {0}".format(t)
+        format_string += "\n)"
         return format_string
 
 
 class CenterCrop(object):
-    """Center crop the tensor to a certain size.
-    """
+    """Center crop the tensor to a certain size."""
 
     def __init__(self, size, preserve_mosaicing_pattern=False):
         if isinstance(size, numbers.Number):
@@ -112,10 +114,10 @@ class CenterCrop(object):
         """
         w, h = x.shape[2], x.shape[1]
         th, tw = self.size
-        assert(th <= h)
-        assert(tw <= w)
-        i = int(round((h - th) / 2.))
-        j = int(round((w - tw) / 2.))
+        assert th <= h
+        assert tw <= w
+        i = int(round((h - th) / 2.0))
+        j = int(round((w - tw) / 2.0))
 
         if self.preserve_mosaicing_pattern:
             # make sure that i and j are even, to preserve
@@ -125,10 +127,10 @@ class CenterCrop(object):
             if j % 2 == 1:
                 j = j + 1
 
-        return x[:, i:i + th, j:j + tw]
+        return x[:, i : i + th, j : j + tw]
 
     def __repr__(self):
-        return self.__class__.__name__ + '(size={0})'.format(self.size)
+        return self.__class__.__name__ + "(size={0})".format(self.size)
 
 
 class RobustNorm(object):
@@ -145,12 +147,12 @@ class RobustNorm(object):
     def percentile(t, q):
         """
         Return the ``q``-th percentile of the flattened input tensor's data.
-        
+
         CAUTION:
          * Needs PyTorch >= 1.1.0, as ``torch.kthvalue()`` is used.
          * Values are not interpolated, which corresponds to
            ``numpy.percentile(..., interpolation="nearest")``.
-           
+
         :param t: Input tensor.
         :param q: Percentile to compute, which must be between 0 and 100 inclusive.
         :return: Resulting value (scalar).
@@ -158,7 +160,7 @@ class RobustNorm(object):
         # Note that ``kthvalue()`` works one-based, i.e. the first sorted value
         # indeed corresponds to k=1, not k=0! Use float(q) instead of q directly,
         # so that ``round()`` returns an integer, even if q is a np.float32.
-        k = 1 + round(.01 * float(q) * (t.numel() - 1))
+        k = 1 + round(0.01 * float(q) * (t.numel() - 1))
         try:
             result = t.view(-1).kthvalue(k).values.item()
         except RuntimeError:
@@ -166,8 +168,7 @@ class RobustNorm(object):
         return result
 
     def __call__(self, x, is_flow=False):
-        """
-        """
+        """ """
         t_max = self.percentile(x, self.top_perc)
         t_min = self.percentile(x, self.low_perc)
         # print("t_max={}, t_min={}".format(t_max, t_min))
@@ -175,13 +176,13 @@ class RobustNorm(object):
             return x
         eps = 1e-6
         normed = torch.clamp(x, min=t_min, max=t_max)
-        normed = (normed-torch.min(normed))/(torch.max(normed)+eps)
+        normed = (normed - torch.min(normed)) / (torch.max(normed) + eps)
         return normed
 
     def __repr__(self):
         format_string = self.__class__.__name__
-        format_string += '(top_perc={:.2f}'.format(self.top_perc)
-        format_string += ', low_perc={:.2f})'.format(self.low_perc)
+        format_string += "(top_perc={:.2f}".format(self.top_perc)
+        format_string += ", low_perc={:.2f})".format(self.low_perc)
         return format_string
 
 
@@ -190,17 +191,18 @@ class LegacyNorm(object):
     """
     Rescale tensor to mean=0 and standard deviation std=1
     """
+
     def __call__(self, x, is_flow=False):
         """
         Compute mean and stddev of the **nonzero** elements of the event tensor
         we do not use PyTorch's default mean() and std() functions since it's faster
         to compute it by hand than applying those funcs to a masked array
         """
-        nonzero = (x != 0)
+        nonzero = x != 0
         num_nonzeros = nonzero.sum()
         if num_nonzeros > 0:
             mean = x.sum() / num_nonzeros
-            stddev = torch.sqrt((x ** 2).sum() / num_nonzeros - mean ** 2)
+            stddev = torch.sqrt((x**2).sum() / num_nonzeros - mean**2)
             mask = nonzero.float()
             x = mask * (x - mean) / stddev
         return x
@@ -209,9 +211,9 @@ class LegacyNorm(object):
         format_string = self.__class__.__name__
         return format_string
 
+
 class RandomCrop(object):
-    """Crop the tensor at a random location.
-    """
+    """Crop the tensor at a random location."""
 
     def __init__(self, size, preserve_mosaicing_pattern=False):
         if isinstance(size, numbers.Number):
@@ -226,8 +228,12 @@ class RandomCrop(object):
         w, h = x.shape[2], x.shape[1]
         th, tw = output_size
         if th > h or tw > w:
-            raise Exception("Input size {}x{} is less than desired cropped \
-                    size {}x{} - input tensor shape = {}".format(w,h,tw,th,x.shape))
+            raise Exception(
+                "Input size {}x{} is less than desired cropped \
+                    size {}x{} - input tensor shape = {}".format(
+                    w, h, tw, th, x.shape
+                )
+            )
         if w == tw and h == th:
             return 0, 0, h, w
 
@@ -252,15 +258,14 @@ class RandomCrop(object):
             if j % 2 == 1:
                 j = j + 1
 
-        return x[:, i:i + h, j:j + w]
+        return x[:, i : i + h, j : j + w]
 
     def __repr__(self):
-        return self.__class__.__name__ + '(size={0})'.format(self.size)
+        return self.__class__.__name__ + "(size={0})".format(self.size)
 
 
 class RandomRotationFlip(object):
-    """Rotate the image by angle.
-    """
+    """Rotate the image by angle."""
 
     def __init__(self, degrees, p_hflip=0.5, p_vflip=0.5):
         if isinstance(degrees, numbers.Number):
@@ -284,9 +289,13 @@ class RandomRotationFlip(object):
         angle = random.uniform(degrees[0], degrees[1])
         angle_rad = angle * pi / 180.0
 
-        M_original_transformed = torch.FloatTensor([[cos(angle_rad), -sin(angle_rad), 0],
-                                                    [sin(angle_rad), cos(angle_rad), 0],
-                                                    [0, 0, 1]])
+        M_original_transformed = torch.FloatTensor(
+            [
+                [cos(angle_rad), -sin(angle_rad), 0],
+                [sin(angle_rad), cos(angle_rad), 0],
+                [0, 0, 1],
+            ]
+        )
 
         if random.random() < p_hflip:
             M_original_transformed[:, 0] *= -1
@@ -296,7 +305,9 @@ class RandomRotationFlip(object):
 
         M_transformed_original = torch.inverse(M_original_transformed)
 
-        M_original_transformed = M_original_transformed[:2, :].unsqueeze(dim=0)  # 3 x 3 -> N x 2 x 3
+        M_original_transformed = M_original_transformed[:2, :].unsqueeze(
+            dim=0
+        )  # 3 x 3 -> N x 2 x 3
         M_transformed_original = M_transformed_original[:2, :].unsqueeze(dim=0)
 
         return M_original_transformed, M_transformed_original
@@ -308,12 +319,14 @@ class RandomRotationFlip(object):
         Returns:
             Tensor: Rotated tensor.
         """
-        assert(len(x.shape) == 3)
+        assert len(x.shape) == 3
 
         if is_flow:
-            assert(x.shape[0] == 2)
+            assert x.shape[0] == 2
 
-        M_original_transformed, M_transformed_original = self.get_params(self.degrees, self.p_hflip, self.p_vflip)
+        M_original_transformed, M_transformed_original = self.get_params(
+            self.degrees, self.p_hflip, self.p_vflip
+        )
         affine_grid = F.affine_grid(M_original_transformed, x.unsqueeze(dim=0).shape)
         transformed = F.grid_sample(x.unsqueeze(dim=0), affine_grid)
 
@@ -331,10 +344,10 @@ class RandomRotationFlip(object):
         return transformed.squeeze(dim=0)
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '(degrees={0}'.format(self.degrees)
-        format_string += ', p_flip={:.2f}'.format(self.p_hflip)
-        format_string += ', p_vlip={:.2f}'.format(self.p_vflip)
-        format_string += ')'
+        format_string = self.__class__.__name__ + "(degrees={0}".format(self.degrees)
+        format_string += ", p_flip={:.2f}".format(self.p_hflip)
+        format_string += ", p_vlip={:.2f}".format(self.p_vflip)
+        format_string += ")"
         return format_string
 
 
@@ -353,10 +366,10 @@ class RandomFlip(object):
         :param is_flow: if True, x is an [... x 2 x H x W] displacement field, which will also be transformed
         :return Tensor: Flipped tensor.
         """
-        assert(len(x.shape) >= 2)
+        assert len(x.shape) >= 2
         if is_flow:
-            assert(len(x.shape) >= 3)
-            assert(x.shape[-3] == 2)
+            assert len(x.shape) >= 3
+            assert x.shape[-3] == 2
 
         dims = []
         if random.random() < self.p_hflip:
@@ -377,6 +390,6 @@ class RandomFlip(object):
 
     def __repr__(self):
         format_string = self.__class__.__name__
-        format_string += '(p_flip={:.2f}'.format(self.p_hflip)
-        format_string += ', p_vlip={:.2f})'.format(self.p_vflip)
+        format_string += "(p_flip={:.2f}".format(self.p_hflip)
+        format_string += ", p_vlip={:.2f})".format(self.p_vflip)
         return format_string

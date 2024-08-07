@@ -9,8 +9,21 @@ from event_utils import *
 from objectives import *
 from warps import *
 
-def draw_objective_function(xs, ys, ts, ps, objective, warpfunc, x_range=(-200, 200), y_range=(-200, 200),
-        gt=(0,0), show_gt=True, resolution=20, img_size=(180, 240)):
+
+def draw_objective_function(
+    xs,
+    ys,
+    ts,
+    ps,
+    objective,
+    warpfunc,
+    x_range=(-200, 200),
+    y_range=(-200, 200),
+    gt=(0, 0),
+    show_gt=True,
+    resolution=20,
+    img_size=(180, 240),
+):
     """
     Draw the objective function given by sampling over a range. Depending on the value of resolution, this
     can involve many samples and take some time.
@@ -24,28 +37,48 @@ def draw_objective_function(xs, ys, ts, ps, objective, warpfunc, x_range=(-200, 
         resolution (float) The resolution of the sampling
         img_size (tuple) The image sensor size
     """
-    width = x_range[1]-x_range[0]
-    height = y_range[1]-y_range[0]
-    print("Drawing objective function. Taking {} samples".format((width*height)/resolution))
-    imshape = (int(height/resolution+0.5), int(width/resolution+0.5))
+    width = x_range[1] - x_range[0]
+    height = y_range[1] - y_range[0]
+    print(
+        "Drawing objective function. Taking {} samples".format(
+            (width * height) / resolution
+        )
+    )
+    imshape = (int(height / resolution + 0.5), int(width / resolution + 0.5))
     img = np.zeros(imshape)
     for x in range(img.shape[1]):
-       for y in range(img.shape[0]):
-           params = np.array([x*resolution+x_range[0], y*resolution+y_range[0]])
-           img[y,x] = -objective.evaluate_function(params, xs, ys, ts, ps, warpfunc, img_size, blur_sigma=0)
+        for y in range(img.shape[0]):
+            params = np.array(
+                [x * resolution + x_range[0], y * resolution + y_range[0]]
+            )
+            img[y, x] = -objective.evaluate_function(
+                params, xs, ys, ts, ps, warpfunc, img_size, blur_sigma=0
+            )
     img = cv.normalize(img, None, 0, 1.0, cv.NORM_MINMAX)
-    plt.imshow(img, interpolation='bilinear', cmap='viridis')
+    plt.imshow(img, interpolation="bilinear", cmap="viridis")
     plt.xticks([])
     plt.yticks([])
     if show_gt:
-        xloc = ((gt[0]-x_range[0])/(width))*imshape[1]
-        yloc = ((gt[1]-y_range[0])/(height))*imshape[0]
-        plt.axhline(y=yloc, color='r', linestyle='--')
-        plt.axvline(x=xloc, color='r', linestyle='--')
+        xloc = ((gt[0] - x_range[0]) / (width)) * imshape[1]
+        yloc = ((gt[1] - y_range[0]) / (height)) * imshape[0]
+        plt.axhline(y=yloc, color="r", linestyle="--")
+        plt.axvline(x=xloc, color="r", linestyle="--")
     plt.show()
 
-def optimize_contrast(xs, ys, ts, ps, warp_function, objective, optimizer=opt.fmin_bfgs, x0=None,
-        numeric_grads=False, blur_sigma=None, img_size=(180, 240)):
+
+def optimize_contrast(
+    xs,
+    ys,
+    ts,
+    ps,
+    warp_function,
+    objective,
+    optimizer=opt.fmin_bfgs,
+    x0=None,
+    numeric_grads=False,
+    blur_sigma=None,
+    img_size=(180, 240),
+):
     """
     Optimize contrast for a set of events
     Parameters:
@@ -68,14 +101,23 @@ def optimize_contrast(xs, ys, ts, ps, warp_function, objective, optimizer=opt.fm
         The max arguments for the warp parameters wrt the objective
     """
     args = (xs, ys, ts, ps, warp_function, img_size, blur_sigma)
-    x0 = np.array([0,0])
+    x0 = np.array([0, 0])
     if x0 is None:
         x0 = np.zeros(warp_function.dims)
     if numeric_grads:
-        argmax = optimizer(objective.evaluate_function, x0, args=args, epsilon=1, disp=False)
+        argmax = optimizer(
+            objective.evaluate_function, x0, args=args, epsilon=1, disp=False
+        )
     else:
-        argmax = optimizer(objective.evaluate_function, x0, fprime=objective.evaluate_gradient, args=args, disp=False)
+        argmax = optimizer(
+            objective.evaluate_function,
+            x0,
+            fprime=objective.evaluate_gradient,
+            args=args,
+            disp=False,
+        )
     return argmax
+
 
 def optimize(xs, ys, ts, ps, warp, obj, numeric_grads=True, img_size=(180, 240)):
     """
@@ -97,8 +139,19 @@ def optimize(xs, ys, ts, ps, warp, obj, numeric_grads=True, img_size=(180, 240))
         The max arguments for the warp parameters wrt the objective
     """
     numeric_grads = numeric_grads if obj.has_derivative else True
-    argmax_an = optimize_contrast(xs, ys, ts, ps, warp, obj, numeric_grads=numeric_grads, blur_sigma=blur, img_size=img_size)
+    argmax_an = optimize_contrast(
+        xs,
+        ys,
+        ts,
+        ps,
+        warp,
+        obj,
+        numeric_grads=numeric_grads,
+        blur_sigma=blur,
+        img_size=img_size,
+    )
     return argmax_an
+
 
 def optimize_r2(xs, ys, ts, ps, warp, obj, numeric_grads=True, img_size=(180, 240)):
     """
@@ -120,9 +173,22 @@ def optimize_r2(xs, ys, ts, ps, warp, obj, numeric_grads=True, img_size=(180, 24
     """
     soe_obj = soe_objective()
     numeric_grads = numeric_grads if obj.has_derivative else True
-    argmax_an = optimize_contrast(xs, ys, ts, ps, warp, obj, numeric_grads=numeric_grads, blur_sigma=None)
-    argmax_an = optimize_contrast(xs, ys, ts, ps, warp, soe_obj, x0=argmax_an, numeric_grads=numeric_grads, blur_sigma=1.0)
+    argmax_an = optimize_contrast(
+        xs, ys, ts, ps, warp, obj, numeric_grads=numeric_grads, blur_sigma=None
+    )
+    argmax_an = optimize_contrast(
+        xs,
+        ys,
+        ts,
+        ps,
+        warp,
+        soe_obj,
+        x0=argmax_an,
+        numeric_grads=numeric_grads,
+        blur_sigma=1.0,
+    )
     return argmax_an
+
 
 if __name__ == "__main__":
     """
@@ -134,34 +200,86 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="h5 events path")
-    parser.add_argument("--gt", nargs='+', type=float, default=(0,0))
-    parser.add_argument("--img_size", nargs='+', type=float, default=(180,240))
+    parser.add_argument("--gt", nargs="+", type=float, default=(0, 0))
+    parser.add_argument("--img_size", nargs="+", type=float, default=(180, 240))
     args = parser.parse_args()
 
     xs, ys, ts, ps = read_h5_event_components(args.path)
-    ts = ts-ts[0]
+    ts = ts - ts[0]
     gt_params = tuple(args.gt)
-    img_size=tuple(args.img_size)
+    img_size = tuple(args.img_size)
 
     start_idx = 20000
-    end_idx=start_idx+15000
+    end_idx = start_idx + 15000
     blur = None
 
-    draw_objective_function(xs[start_idx:end_idx], ys[start_idx:end_idx], ts[start_idx:end_idx], ps[start_idx:end_idx], variance_objective(), linvel_warp())
+    draw_objective_function(
+        xs[start_idx:end_idx],
+        ys[start_idx:end_idx],
+        ts[start_idx:end_idx],
+        ps[start_idx:end_idx],
+        variance_objective(),
+        linvel_warp(),
+    )
 
-    objectives = [r1_objective(), zhu_timestamp_objective(), variance_objective(), sos_objective(), soe_objective(), moa_objective(),
-            isoa_objective(), sosa_objective(), rms_objective()]
+    objectives = [
+        r1_objective(),
+        zhu_timestamp_objective(),
+        variance_objective(),
+        sos_objective(),
+        soe_objective(),
+        moa_objective(),
+        isoa_objective(),
+        sosa_objective(),
+        rms_objective(),
+    ]
     warp = linvel_warp()
     for obj in objectives:
-        argmax = optimize(xs[start_idx:end_idx], ys[start_idx:end_idx], ts[start_idx:end_idx], ps[start_idx:end_idx], warp, obj, numeric_grads=True)
-        loss = obj.evaluate_function(argmax, xs[start_idx:end_idx], ys[start_idx:end_idx], ts[start_idx:end_idx],
-                ps[start_idx:end_idx], warp, img_size=img_size)
-        gtloss = obj.evaluate_function(gt_params, xs[start_idx:end_idx], ys[start_idx:end_idx],
-                ts[start_idx:end_idx], ps[start_idx:end_idx], warp, img_size=img_size)
+        argmax = optimize(
+            xs[start_idx:end_idx],
+            ys[start_idx:end_idx],
+            ts[start_idx:end_idx],
+            ps[start_idx:end_idx],
+            warp,
+            obj,
+            numeric_grads=True,
+        )
+        loss = obj.evaluate_function(
+            argmax,
+            xs[start_idx:end_idx],
+            ys[start_idx:end_idx],
+            ts[start_idx:end_idx],
+            ps[start_idx:end_idx],
+            warp,
+            img_size=img_size,
+        )
+        gtloss = obj.evaluate_function(
+            gt_params,
+            xs[start_idx:end_idx],
+            ys[start_idx:end_idx],
+            ts[start_idx:end_idx],
+            ps[start_idx:end_idx],
+            warp,
+            img_size=img_size,
+        )
         print("{}:({})={}, gt={}".format(obj.name, argmax, loss, gtloss))
         if obj.has_derivative:
-            argmax = optimize(xs[start_idx:end_idx], ys[start_idx:end_idx], ts[start_idx:end_idx],
-                    ps[start_idx:end_idx], warp, obj, numeric_grads=False)
-            loss_an = obj.evaluate_function(argmax, xs[start_idx:end_idx], ys[start_idx:end_idx],
-                    ts[start_idx:end_idx], ps[start_idx:end_idx], warp, img_size=img_size)
+            argmax = optimize(
+                xs[start_idx:end_idx],
+                ys[start_idx:end_idx],
+                ts[start_idx:end_idx],
+                ps[start_idx:end_idx],
+                warp,
+                obj,
+                numeric_grads=False,
+            )
+            loss_an = obj.evaluate_function(
+                argmax,
+                xs[start_idx:end_idx],
+                ys[start_idx:end_idx],
+                ts[start_idx:end_idx],
+                ps[start_idx:end_idx],
+                warp,
+                img_size=img_size,
+            )
             print("   analytical:{}={}".format(argmax, loss_an))

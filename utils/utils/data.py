@@ -4,7 +4,7 @@ from tqdm import tqdm
 from torch.utils.data import ConcatDataset
 
 
-data_sources = ('esim', 'ijrr', 'mvsec', 'eccd', 'hqfd', 'unknown')
+data_sources = ("esim", "ijrr", "mvsec", "eccd", "hqfd", "unknown")
 # Usage: name = data_sources[1], idx = data_sources.index('ijrr')
 
 
@@ -17,11 +17,11 @@ def concatenate_subfolders(data_file, dataset, dataset_kwargs):
     elif os.path.isfile(data_file):
         subfolders = pd.read_csv(data_file, header=None).values.flatten().tolist()
     else:
-        raise Exception('{} must be data_file.txt or base/folder'.format(data_file))
-    print('Found {} samples in {}'.format(len(subfolders), data_file))
+        raise Exception("{} must be data_file.txt or base/folder".format(data_file))
+    print("Found {} samples in {}".format(len(subfolders), data_file))
     datasets = []
     for subfolder in subfolders:
-        dataset_kwargs['item_kwargs'].update({'base_folder': subfolder})
+        dataset_kwargs["item_kwargs"].update({"base_folder": subfolder})
         datasets.append(dataset(**dataset_kwargs))
     return ConcatDataset(datasets)
 
@@ -37,10 +37,11 @@ def concatenate_datasets(data_file, dataset_type, dataset_kwargs={}):
     """
     data_paths = pd.read_csv(data_file, header=None).values.flatten().tolist()
     dataset_list = []
-    print('Concatenating {} datasets'.format(dataset_type))
+    print("Concatenating {} datasets".format(dataset_type))
     for data_path in tqdm(data_paths):
         dataset_list.append(dataset_type(data_path, **dataset_kwargs))
     return ConcatDataset(dataset_list)
+
 
 def concatenate_memmap_datasets(data_file, dataset_type, dataset_kwargs):
     """
@@ -55,8 +56,8 @@ def concatenate_memmap_datasets(data_file, dataset_type, dataset_kwargs):
 
     memmap_paths = pd.read_csv(data_file, header=None).values.flatten().tolist()
     dataset_list = []
-    print('Concatenating {} datasets'.format(dataset_type))
+    print("Concatenating {} datasets".format(dataset_type))
     for memmap_path in tqdm(memmap_paths):
-        dataset_kwargs['dataset_kwargs'].update({'root': memmap_path})
+        dataset_kwargs["dataset_kwargs"].update({"root": memmap_path})
         dataset_list.append(dataset_type(**dataset_kwargs))
     return ConcatDataset(dataset_list)
