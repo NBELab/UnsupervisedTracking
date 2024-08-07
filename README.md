@@ -107,7 +107,7 @@ python train/train.py
 * The trained weights will be saved in the /train/work/ directory.
 * The naming convention for the weights is as follows:
 ```
-{datetime}_{num_bins}.pth
+{datetime}_{num_bins}.pth.tar
 ```
 * These weights will be used for further tracking.
 
