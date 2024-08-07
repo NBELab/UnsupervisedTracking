@@ -35,6 +35,7 @@
 
 ## Usage
 
+### Tracking
 1. Download the dataset from [Dataset](#dataset), and follow the readme in the data folder.
 
 2. Navigate to the 'track' directory in the repository:
@@ -79,6 +80,37 @@ optional arguments:
 ```
 
 The files are configured to run the tracking of the new dataset.
+
+### Training
+1. Create the training dataset
+
+* Follow the instruction in the [Dataset](#dataset).
+* Ensure that each data file is in the following format:
+```
+full/path/to/each/training/file.h5
+```
+2. Update the Config File
+
+* Modify the data_file in the config file to reflect the correct path of the data files.
+* Adjust other parameters in the config file as needed, based on the training setup described in the paper.
+
+3. Run the Training Script
+
+* Execute the training script using the following command:
+```
+python train/train.py
+```
+* All training parameters are specified in the config file.
+
+5. Output Weights
+
+* The trained weights will be saved in the /train/work/ directory.
+* The naming convention for the weights is as follows:
+```
+{datetime}_{num_bins}.pth
+```
+* These weights will be used for further tracking.
+
 
 ## Datasets
 Our dataset link:([link](https://drive.google.com/file/d/1J4nt8YPFGKSW-L5MMPa-tCjsgcd9aeLF/view))
